@@ -108,10 +108,14 @@ async def _json_response(response: httpx.Response, service: str, request_id: str
 
 @app.middleware("http")
 async def request_id_middleware(request: Request, call_next):
-    request_id = _request_id(request)
+    request.state.request_id = request.headers.get("x-request-id") or str(uuid.uuid4())
     response = await call_next(request)
-    response.headers["x-request-id"] = request_id
+    response.headers["x-request-id"] = request.state.request_id
     return response
+
+
+def _request_id(request: Request) -> str:
+    return getattr(request.state, "request_id", None) or str(uuid.uuid4())
 
 
 @app.get("/health/live", tags=["health"])

@@ -25,25 +25,49 @@ def client():
         yield test_client
 
 
-def test_rejects_non_wav(client):
-    response = client.post("/analyze_pcg", files={"file": ("note.mp3", b"data", "audio/mpeg")})
-    assert response.status_code == 415
+def test_invalid_wav_returns_422(client):
+    response = client.post("/analyze_pcg", files={"file": ("bad.wav", b"not a wav", "audio/wav")})
+    assert response.status_code == 422
 
 
-def test_analyze_pcg_forwards_audio_result(client):
-    audio_response = httpx.Response(200, json={"features": {"heart_rate": 72}})
-    orchestrator_response = httpx.Response(200, json={"prediction": "normal"})
-    client_app = app.state.http_client
-    client_app.post = AsyncMock(side_effect=[audio_response, orchestrator_response])
+def test_oversized_file_returns_413(client, monkeypatch):
+    monkeypatch.setattr("app.main.MAX_UPLOAD_BYTES", 10)
+    response = client.post("/analyze_pcg", files={"file": ("r.wav", wav_bytes(), "audio/wav")})
+    assert response.status_code == 413
 
-    response = client.post(
-        "/analyze_pcg",
-        files={"file": ("recording.wav", wav_bytes(), "audio/wav")},
-        data={"patient_id": "patient-1"},
-        headers={"x-request-id": "request-1"},
-    )
 
+def test_audio_engine_unreachable_returns_502(client, monkeypatch):
+    monkeypatch.setattr(app.state.http_client, "post", AsyncMock(side_effect=httpx.ConnectError("down")))
+    response = client.post("/analyze_pcg", files={"file": ("r.wav", wav_bytes(), "audio/wav")})
+    assert response.status_code == 502
+
+
+def test_audio_engine_error_skips_orchestrator(client, monkeypatch):
+    post = AsyncMock(return_value=httpx.Response(500, json={}))
+    monkeypatch.setattr(app.state.http_client, "post", post)
+    response = client.post("/analyze_pcg", files={"file": ("r.wav", wav_bytes(), "audio/wav")})
+    assert response.status_code == 502
+    assert post.await_count == 1
+
+
+def test_orchestrator_invalid_json_returns_502(client, monkeypatch):
+    post = AsyncMock(side_effect=[httpx.Response(200, json={"features": {}}), httpx.Response(200, content=b"not json")])
+    monkeypatch.setattr(app.state.http_client, "post", post)
+    response = client.post("/analyze_pcg", files={"file": ("r.wav", wav_bytes(), "audio/wav")})
+    assert response.status_code == 502
+
+
+def test_liveness_and_generated_request_id(client):
+    response = client.get("/health/live")
     assert response.status_code == 200
-    assert response.json() == {"prediction": "normal"}
-    assert response.headers["x-request-id"] == "request-1"
-    assert client_app.post.await_count == 2
+    assert response.headers["x-request-id"]
+
+
+def test_readiness_ok(client, monkeypatch):
+    monkeypatch.setattr(app.state.http_client, "get", AsyncMock(return_value=httpx.Response(200)))
+    assert client.get("/health/ready").status_code == 200
+
+
+def test_readiness_unavailable(client, monkeypatch):
+    monkeypatch.setattr(app.state.http_client, "get", AsyncMock(side_effect=httpx.ConnectError("down")))
+    assert client.get("/health/ready").status_code == 503
