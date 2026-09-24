@@ -13,7 +13,7 @@ from typing import Any
 import httpx
 from fastapi import FastAPI, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse
+from fastapi.responses import FileResponse, JSONResponse
 
 LOGGER = logging.getLogger("api_gateway")
 
@@ -121,6 +121,11 @@ def _request_id(request: Request) -> str:
 @app.get("/health/live", tags=["health"])
 async def liveness() -> dict[str, str]:
     return {"status": "ok", "service": "api-gateway"}
+
+
+@app.get("/", include_in_schema=False)
+async def test_console() -> FileResponse:
+    return FileResponse(os.path.join(os.path.dirname(__file__), "static", "index.html"))
 
 
 @app.get("/health/ready", tags=["health"])
