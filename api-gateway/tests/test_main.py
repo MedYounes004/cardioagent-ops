@@ -63,6 +63,12 @@ def test_liveness_and_generated_request_id(client):
     assert response.headers["x-request-id"]
 
 
+def test_root_serves_analysis_console(client):
+    response = client.get("/")
+    assert response.status_code == 200
+    assert "CardioAgent / API gateway" in response.text
+
+
 def test_readiness_ok(client, monkeypatch):
     monkeypatch.setattr(app.state.http_client, "get", AsyncMock(return_value=httpx.Response(200)))
     assert client.get("/health/ready").status_code == 200
