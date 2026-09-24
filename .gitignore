@@ -1,0 +1,123 @@
+# ==========================================
+# Operating System & Environment Files
+# ==========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*.swp
+*.swo
+*~
+
+# ==========================================
+# Environment Variables & Secrets (CRITICAL)
+# ==========================================
+.env
+.env.local
+.env.*.localgit
+*.env
+!.env.example
+
+# ==========================================
+# Python & Virtual Environments
+# ==========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# ==========================================
+# Testing, Coverage & Jupyter Notebooks
+# ==========================================
+.pytest_cache/
+.coverage
+.coverage.*
+htmlcov/
+.nox/
+.hypothesis/
+.ipynb_checkpoints/
+*-checkpoint.ipynb
+
+# ==========================================
+# Docker & Local Container Persistence
+# ==========================================
+.docker/
+*.log
+docker-compose.override.yml
+
+# ==========================================
+# Service 1: llm-server (Heavy Model Weights)
+# ==========================================
+# Ignore large model files and GGUF/binaries across all services
+*.gguf
+*.bin
+*.pt
+*.pth
+*.safetensors
+*.onnx
+llm-server/models/*
+!llm-server/models/.gitkeep
+
+# ==========================================
+# Service 2: vector-db (Persistent Vector Data)
+# ==========================================
+vector-db/data/*
+!vector-db/data/.gitkeep
+qdrant_storage/
+chroma_db/
+
+# ==========================================
+# Service 3: audio-engine (Audio Data & Artifacts)
+# ==========================================
+# Audio uploads and dataset processing caches
+*.wav
+*.mp3
+*.flac
+*.ogg
+audio-engine/data/
+audio-engine/models/*.onnx
+!audio-engine/models/.gitkeep
+
+# ==========================================
+# Service 6: mlflow-server (MLflow Artifacts & DB)
+# ==========================================
+mlflow-server/artifacts/*
+!mlflow-server/artifacts/.gitkeep
+mlflow.db
+mlruns/
+
+# ==========================================
+# IDE & Code Editor Configs
+# ==========================================
+.idea/
+.vscode/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
