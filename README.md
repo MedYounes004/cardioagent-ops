@@ -1,0 +1,1 @@
+[![MLOps CI/CD](https://github.com/MedYounes004/cardioagent-ops/actions/workflows/mlops-ci-cd.yml/badge.svg)](https://github.com/MedYounes004/cardioagent-ops/actions/workflows/mlops-ci-cd.yml)
