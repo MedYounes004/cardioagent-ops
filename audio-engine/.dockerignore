@@ -1,0 +1,31 @@
+# Python
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+
+# Virtual environments
+.venv/
+venv/
+
+# Secrets and local config
+.env
+*.env
+
+# Tests and dev-only files
+tests/
+pytest.ini
+requirements-dev.txt
+
+# Git, docs, editors
+.git/
+.gitignore
+*.md
+.vscode/
+.idea/
+
+# Docker files themselves
+Dockerfile
+.dockerignore
