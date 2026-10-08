@@ -29,6 +29,22 @@ services:
     networks:
       - cardio-network
 
+  mlflow-server:
+    build:
+      context: ./mlflow-server
+      dockerfile: Dockerfile
+    ports:
+      - "5000:5000"
+    volumes:
+      - mlflow-data:/mlflow/mlruns
+      - mlflow-artifacts:/mlflow/artifacts
+    networks:
+      - cardio-network
+
+volumes:
+  mlflow-data:
+  mlflow-artifacts:
+  
 networks:
   cardio-network:
     driver: bridge
