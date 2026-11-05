@@ -11,6 +11,8 @@ services:
     depends_on:
       audio-engine:
         condition: service_healthy
+      agent-orchestrator:
+        condition: service_healthy
     networks:
       - cardio-network
 
@@ -38,6 +40,24 @@ services:
     volumes:
       - mlflow-data:/mlflow/mlruns
       - mlflow-artifacts:/mlflow/artifacts
+    networks:
+      - cardio-network
+
+  agent-orchestrator:
+    build:
+      context: ./agent-orchestrator
+      dockerfile: Dockerfile
+    ports:
+      - "8002:8002"
+    environment:
+      LLM_URL: ${LLM_URL:-}
+      LLM_MODEL: ${LLM_MODEL:-cardio-qwen}
+    healthcheck:
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8002/health')"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     networks:
       - cardio-network
 
